@@ -64,14 +64,15 @@
 
       <!-- 信息列表 -->
       <el-dialog title="信息列表" :visible.sync="dialogTableVisible" width="800px">
-        <el-table :data="gridData" max-height="250" >
+        <el-button type="success" size="small" @click="handleAddPW()" icon="el-icon-plus" >添加</el-button>
+        <el-table :data="gridData" max-height="250" :row-class-name="tableRowClassName" >
           <el-table-column property="info" label="描述" width="150" fixed></el-table-column>
           <el-table-column property="username" label="帐号" width="150"></el-table-column>
           <el-table-column property="password" label="密码" width="150"></el-table-column>
           <el-table-column property="phone" label="手机" width="150"></el-table-column>
           <el-table-column property="email" label="邮箱" width="200"></el-table-column>
           <el-table-column property="more" label="备注" width="200"></el-table-column>
-          <el-table-column property="usable" label="状态"></el-table-column>
+          <el-table-column property="usable" label="状态" :formatter="getIcon"> </el-table-column>
           <el-table-column align="right" label="操作" fixed="right" width="100px">
             <template slot-scope="scope">
               <el-button
@@ -85,7 +86,7 @@
                 size="mini"
                 type="danger"
                 class="el-icon-delete"
-                >删除</el-button>
+                @click="deletePW(scope.$index, scope.row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -166,7 +167,7 @@
                 type="textarea"
                 :rows="3"
                 placeholder="请输入备注"
-                v-model="editpassform.info">
+                v-model="editpassform.more">
             </el-input>
           </el-form-item>
           <el-form-item label="状态" :label-width="formLabelWidth">
@@ -185,6 +186,13 @@
 </template>
 
 <style >
+.el-table .warning-row {
+    background: rgb(226, 226, 226);
+  }
+
+  .el-table .success-row {
+    background: #f0f9eb;
+  }
 </style>
 
 <script>
@@ -265,15 +273,90 @@ export default {
     })
   },
   methods: {
+    deletePW(index,row){
+      let _this = this
+      this.$confirm('此操作将永久删除, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          // _this.$db.password.find({},function (err,res) {
+            // console.log(err,res)
+            _this.$db.password.remove({ _id: row._id }, {}, function (err, numRemoved) {
+              if(err){
+                _this.$message.error("删除失败");
+
+              }else{
+                _this.$message({
+                  type: 'success',
+                  message: '删除成功!'
+                });
+                // _this.reloadTableDataAfterOperate();
+                // _this.editPWDialogFormVisible = false
+                _this.dialogTableVisible = false;
+              }
+            });
+            
+          // })
+        }).catch(() => {
+          _this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });
+
+    },
+    handleAddPW(){
+
+    },
+    editPW(){
+      let _this = this
+      this.$db.password.update({ _id: _this.editpassform._id }, { $set: { 
+        info: _this.editpassform.info,
+        username: _this.editpassform.username,
+        password: _this.editpassform.password,
+        phone: _this.editpassform.phone,
+        email: _this.editpassform.email,
+        more: _this.editpassform.more,
+        usable: _this.editpassform.usable,
+         } }, {}, function (err) {
+           if(err){
+                _this.$message.error("修改失败");
+              }else{
+                _this.$message({
+                  type: 'success',
+                  message: '修改成功!'
+                });
+
+           }
+      });
+      this.editPWDialogFormVisible = false
+
+    },
     handelEditPW(index,rows){
-      console.log(index,rows)
-      // console.log(this.gridData)
-      // this.gridData.splice(index, 1);
-      console.log(this.gridData)
       this.editpassform = rows
+      console.log(this.editpassform)
 
       this.editPWDialogFormVisible = true
     },
+    getIcon(row, column, cellValue){
+      const h = this.$createElement;
+        if(cellValue){
+          return h('i', { class: 'el-icon-success' ,style: 'color:green'}, '可用')
+        }else{
+          return h('i', { class: 'el-icon-error' ,style: 'color: gray'}, '废弃')
+
+        }
+
+    },
+    tableRowClassName({row, rowIndex}) {
+        if(row.usable){
+          return 'success-row';
+        }else{
+          return 'warning-row';
+
+        }
+      },
     setDb(){
       let _this = this;
       this.$db.project.insert({
@@ -416,14 +499,14 @@ export default {
       // console.log(index,rows._id)
       // console.log(this)
       // this.$alert('111')
-      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+      this.$confirm('此操作将永久删除, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
           // rows.splice(index, 1);
           console.log(index,rows._id)
-          _this.$db.project.find({},function (err,res) {
+          // _this.$db.project.find({},function (err,res) {
             console.log(err,res)
             _this.$db.project.remove({ _id: rows._id }, {}, function (err, numRemoved) {
               if(err){
@@ -438,7 +521,7 @@ export default {
               }
             });
             
-          })
+          // })
         }).catch(() => {
           _this.$message({
             type: 'info',
