@@ -20,6 +20,8 @@
             <el-input
               v-model="search"
               size="mini"
+              @keyup.enter.native="onSearch"
+              @blur="onSearch"
               placeholder="输入关键字搜索"/>
           </template>
           <template slot-scope="scope">
@@ -291,7 +293,11 @@ export default {
     skipNum:function () {
       
       return (this.pageNum-1)*this.pageSize
+    },
+    key_re: function(){
+      return new RegExp(this.search)
     }
+
 
   },
   mounted() {
@@ -312,6 +318,34 @@ export default {
     })
   },
   methods: {
+    onBlur(){
+      alert(123)
+
+    },
+    onSearch(){
+      // alert(this.search)
+      let _this = this
+      // let key_re = new RegExp(this.search)
+      // console.log(key_re)
+      _this.$db.project.count({name:_this.key_re}, function (err, count) {
+        _this.totalCount = count;
+        // console.log(count)
+      });
+      this.pageNum = 1
+      this.currentPage = 1
+
+      _this.$db.project.find({name:_this.key_re}).sort({createTime: -1}).skip(_this.skipNum).limit(_this.pageSize).exec(function (err,res) {
+        console.log(err,res)
+        if(err){
+          _this.$message.error( '加载数据失败' );          
+        }else{
+          _this.tableData = res
+          // console.log('加载成功')
+          // console.log(_this.tableData)
+        }
+      })
+
+    },
     addPW(){
       let _this = this;
       this.addpassform.createTime = new Date().getTime()
@@ -474,7 +508,7 @@ export default {
         _this.totalCount = count;
       });
       // _this.$db.project.find({}).sort({createTime: -1}).exec(function (err,res) {
-      _this.$db.project.find({}).sort({createTime: -1}).skip(_this.skipNum).limit(_this.pageSize).exec(function (err,res) {
+      _this.$db.project.find({name:_this.key_re}).sort({createTime: -1}).skip(_this.skipNum).limit(_this.pageSize).exec(function (err,res) {
         console.log(err,res)
         if(err){
           this.$message.error( '加载数据失败' );          
