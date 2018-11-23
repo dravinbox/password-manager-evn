@@ -179,6 +179,41 @@
           <el-button type="primary" @click="editPW()">确 定</el-button>
         </div>
       </el-dialog>
+      <!-- 添加密码弹窗 -->
+      <el-dialog title="修改信息" :visible.sync="addPWDialogFormVisible">
+        <el-form :model="addpassform">
+          <el-form-item label="描述" :label-width="formLabelWidth">
+            <el-input v-model="addpassform.info" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="帐号" :label-width="formLabelWidth">
+            <el-input v-model="addpassform.username" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="密码" :label-width="formLabelWidth">
+            <el-input v-model="addpassform.password" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="手机" :label-width="formLabelWidth">
+            <el-input v-model="addpassform.phone" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="邮箱" :label-width="formLabelWidth">
+            <el-input v-model="addpassform.email" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="备注" :label-width="formLabelWidth">
+            <el-input
+                type="textarea"
+                :rows="3"
+                placeholder="请输入备注"
+                v-model="addpassform.more">
+            </el-input>
+          </el-form-item>
+          <el-form-item label="状态" :label-width="formLabelWidth">
+                <el-switch v-model="addpassform.usable"></el-switch>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="addPWDialogFormVisible = false">取 消</el-button>
+          <el-button type="primary" @click="addPW()">确 定</el-button>
+        </div>
+      </el-dialog>
 
 
     </el-main>
@@ -199,6 +234,10 @@
 export default {
   data() {
     return {
+      //添加密码弹窗
+      addPWDialogFormVisible: false,
+      addpassform:{usable:true},
+
       // 修改密码弹窗
       editPWDialogFormVisible: false,
       editpassform:{},
@@ -273,6 +312,28 @@ export default {
     })
   },
   methods: {
+    addPW(){
+      let _this = this;
+      this.addpassform.createTime = new Date().getTime()
+      this.addpassform.project_id = this.currentProjectId
+      this.$db.password.insert(this.addpassform,function (err,res) {
+        if(err){
+          this.$message.error( '添加失败' );          
+        }else{
+          _this.addPWDialogFormVisible = false;
+          _this.dialogTableVisible = false;
+          _this.$message({ type: 'success', message: '添加成功!' });
+
+        }
+        
+      })
+
+    },
+    handleAddPW(){
+      this.addpassform = {usable:true}
+      this.addPWDialogFormVisible = true;
+
+    },
     deletePW(index,row){
       let _this = this
       this.$confirm('此操作将永久删除, 是否继续?', '提示', {
@@ -304,9 +365,6 @@ export default {
             message: '已取消删除'
           });          
         });
-
-    },
-    handleAddPW(){
 
     },
     editPW(){
