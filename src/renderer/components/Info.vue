@@ -67,7 +67,7 @@
       <!-- 信息列表 -->
       <el-dialog title="信息列表" :visible.sync="dialogTableVisible" width="800px">
         <el-button type="success" size="small" @click="handleAddPW()" icon="el-icon-plus" >添加</el-button>
-        <el-table :data="gridData" max-height="250" :row-class-name="tableRowClassName" >
+        <el-table :data="gridData" max-height="300" :row-class-name="tableRowClassName" >
           <el-table-column property="info" label="描述" width="150" fixed></el-table-column>
           <el-table-column property="username" label="帐号" width="150"></el-table-column>
           <el-table-column property="password" label="密码" width="150"></el-table-column>
@@ -327,14 +327,18 @@ export default {
       let _this = this
       // let key_re = new RegExp(this.search)
       // console.log(key_re)
-      _this.$db.project.count({name:_this.key_re}, function (err, count) {
+      _this.$db.project.count(
+       { $or: [ {name:_this.key_re},{info:_this.key_re},{url:_this.key_re} ]},
+       function (err, count) {
         _this.totalCount = count;
         // console.log(count)
       });
       this.pageNum = 1
       this.currentPage = 1
 
-      _this.$db.project.find({name:_this.key_re}).sort({createTime: -1}).skip(_this.skipNum).limit(_this.pageSize).exec(function (err,res) {
+      _this.$db.project.find(
+        { $or: [ {name:_this.key_re},{info:_this.key_re},{url:_this.key_re} ]}
+        ).skip(_this.skipNum).limit(_this.pageSize).exec(function (err,res) {
         console.log(err,res)
         if(err){
           _this.$message.error( '加载数据失败' );          
