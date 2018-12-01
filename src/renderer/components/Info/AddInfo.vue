@@ -1,85 +1,86 @@
 <template>
-   <div class="addinfo">
-       <el-row>
-        <span class="info-title">添加站点信息</span>
-       </el-row>
-       <el-row>
-           <el-col :span="8">站点</el-col>
-           <el-col :span="16">
-                <el-input 
-                    v-model="name" 
-                    placeholder="请输入站点名字">
-                </el-input>
-           </el-col>
-       </el-row>
-       <el-row>
-           <el-col :span="8">简介</el-col>
-           <el-col :span="16">
+      <!-- 添加表单弹窗 -->
+      <el-dialog title="添加信息" :visible.sync="myVisible" >
+        <el-form :model="addform">
+          <el-form-item label="站点" :label-width="formLabelWidth">
+            <el-input v-model="addform.name" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="简介" :label-width="formLabelWidth">
             <el-input
                 type="textarea"
-                :rows="2"
+                :rows="3"
                 placeholder="请输入简介"
-                v-model="info">
+                v-model="addform.info">
             </el-input>
-           </el-col>
-       </el-row>
-       <el-row>
-           <el-col :span="8">简介</el-col>
-           <el-col :span="16">
-            <el-input placeholder="请输入URL" v-model="url">
+          </el-form-item>
+          <el-form-item label="URL" :label-width="formLabelWidth">
+            <el-input placeholder="请输入URL" v-model="addform.url">
                 <template slot="prepend">http://</template>
             </el-input>
-           </el-col>
-       </el-row>
-       <el-row>
-           <el-col :span="12">
-                <el-button type="success" icon="el-icon-check" @click="addInfo">提交</el-button>
-           </el-col>
-           <el-col :span="12">
-                <el-button icon="el-icon-close" @click="cancel">取消</el-button>
-           </el-col>
-       </el-row>
-
-
-    </div> 
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="close">取 消</el-button>
+          <el-button type="primary" @click="addInfo()">确 定</el-button>
+        </div>
+      </el-dialog>
 </template>
+
 <script>
 export default {
-    data: function () {
-        return {
-            name: '',
-            info: '',
-            url:''
-
-        } 
-    },
-    methods:{
-        addInfo(){
-            // todo
-            const h = this.$createElement;
-            this.$notify({
-                title: '提示',
-                message: h('i', { style: 'color: green'}, '添加成功')
-            });
-            this.$router.go(-1)
-        },
-        cancel(){
-            this.$router.go(-1)
+    props:[
+        'addDialogFormVisible',
+    ],
+    computed:{
+        myVisible:{
+            get: function(){
+                return this.addDialogFormVisible
+            },
+            set: function(data){
+                this.$emit("listenShowAddInfo",data)
+                return this.addDialogFormVisible
+            }
         }
+
+    },
+     data() {
+        return {
+            // addVisible: false,
+            addform: {
+                name: '',
+                info: '',
+                url: '',
+            },
+            formLabelWidth: '120px',
+
+        }
+    },
+    methods: {
+        close(){
+            this.myVisible = false
+        },
+    addInfo(){
+      let _this = this;
+      this.addform.createTime = new Date().getTime();
+      this.$db.project.insert(this.addform,function (err,res) {
+        if(err){
+          this.$message.error( '添加失败' );          
+        }else{
+          _this.$message({ type: 'success', message: '添加成功!' });
+          _this.$emit('listenReloadTable');
+
+        }
+        
+      })
+      this.close()
+    },
 
     }
     
 }
 </script>
-<style>
-.addinfo{
-    text-align: center;
-}
-.addinfo .el-row{
-    margin: 50px;
-}
-.info-title{
-    font-size: 24px;
-}
+<style scoped>
+
 </style>
+
 

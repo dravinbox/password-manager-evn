@@ -8,12 +8,17 @@ export default new Router({
     {
       path: '/',
       name: 'info',
-      component: require('@/components/Info').default
+      component: require('@/components/Info/Info').default
+    },
+    {
+      path: '/test',
+      name: 'test',
+      component: require('@/components/Test/Test').default
     },
     {
       path: '/info',
       name: 'info',
-      component: require('@/components/Info').default
+      component: require('@/components/Info/Info').default
     },
     {
       path: '/addinfo',

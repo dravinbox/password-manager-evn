@@ -2,8 +2,19 @@
 
     <el-main>
       <el-row>
-         <el-button type="success" @click="handleAdd()" icon="el-icon-plus" >添加</el-button>
+         <el-button type="success" @click="showAddInfo(true)" icon="el-icon-plus" >添加</el-button>
       </el-row>
+      <add-info 
+      :addDialogFormVisible="addDialogFormVisible" 
+      @listenShowAddInfo="showAddInfo" 
+      @listenReloadTable="reloadTableDataAfterOperate"
+      ></add-info>
+      <edit-info
+      :editDialogFormVisible="editDialogFormVisible" 
+      :editform="editform"
+      @listenShowEditInfo="ShowEditInfo" 
+      ></edit-info>
+
       <el-table 
         ref="multipleTable"
         stripe
@@ -56,13 +67,6 @@
         layout="total, sizes, prev, pager, next, jumper"
         :total="totalCount">
       </el-pagination>
-      <!-- <div style="margin-top: 20px">
-        <el-button @click="toggleSelection([tableData[1], tableData[2]])">切换第二、第三行的选中状态</el-button>
-        <el-button @click="toggleSelection()">取消选择</el-button>
-        <el-button @click="showSearch()">显示搜索框内容</el-button>
-        <el-button @click="setDb()">搜索框内容设置到数据库</el-button>
-        <el-button @click="getDb()">从数据库中取值</el-button>
-      </div> -->
 
       <!-- 信息列表 -->
       <el-dialog title="信息列表" :visible.sync="dialogTableVisible" width="800px">
@@ -94,57 +98,6 @@
         </el-table>
       </el-dialog>
 
-      <!-- 修改表单弹窗 -->
-      <el-dialog title="修改信息" :visible.sync="editDialogFormVisible">
-        <el-form :model="editform">
-          <el-form-item label="站点" :label-width="formLabelWidth">
-            <el-input v-model="editform.name" autocomplete="off"></el-input>
-          </el-form-item>
-          <el-form-item label="简介" :label-width="formLabelWidth">
-            <el-input
-                type="textarea"
-                :rows="3"
-                placeholder="请输入简介"
-                v-model="editform.info">
-            </el-input>
-          </el-form-item>
-          <el-form-item label="URL" :label-width="formLabelWidth">
-            <el-input placeholder="请输入URL" v-model="editform.url">
-                <template slot="prepend">http://</template>
-            </el-input>
-          </el-form-item>
-        </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button @click="editDialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="editInfo()">确 定</el-button>
-        </div>
-      </el-dialog>
-
-      <!-- 添加表单弹窗 -->
-      <el-dialog title="添加信息" :visible.sync="addDialogFormVisible">
-        <el-form :model="addform">
-          <el-form-item label="站点" :label-width="formLabelWidth">
-            <el-input v-model="addform.name" autocomplete="off"></el-input>
-          </el-form-item>
-          <el-form-item label="简介" :label-width="formLabelWidth">
-            <el-input
-                type="textarea"
-                :rows="3"
-                placeholder="请输入简介"
-                v-model="addform.info">
-            </el-input>
-          </el-form-item>
-          <el-form-item label="URL" :label-width="formLabelWidth">
-            <el-input placeholder="请输入URL" v-model="addform.url">
-                <template slot="prepend">http://</template>
-            </el-input>
-          </el-form-item>
-        </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button @click="addDialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="addInfo()">确 定</el-button>
-        </div>
-      </el-dialog>
 
       <!-- 修改密码弹窗 -->
       <el-dialog title="修改信息" :visible.sync="editPWDialogFormVisible">
@@ -233,7 +186,14 @@
 </style>
 
 <script>
+import AddInfo from './AddInfo'
+import EditInfo from './EditInfo'
 export default {
+  components:{
+    AddInfo,
+    EditInfo,
+
+  },
   data() {
     return {
       //添加密码弹窗
@@ -476,33 +436,11 @@ export default {
 
     },
     handleAdd(){
-      this.addform = {}
       this.addDialogFormVisible = true;
     },
-    addInfo(){
-      // this.addform.id = this.tableData.length+1
-      // console.log(this.addform)
-      // this.tableData.push(this.addform)
-      let _this = this;
-      this.addform.createTime = new Date().getTime();
-      this.$db.project.insert(this.addform,function (err,res) {
-        if(err){
-          this.$message.error( '添加失败' );          
-        }else{
-          _this.$message({ type: 'success', message: '添加成功!' });
-          _this.reloadTableDataAfterOperate();
+    showAddInfo(data){
+      this.addDialogFormVisible = data
 
-        }
-        
-      })
-
-      // 通知
-      // const h = this.$createElement;
-      // this.$notify({
-      //     title: '提示',
-      //     message: h('i', { style: 'color: green'}, '添加成功')
-      // });
-      this.addDialogFormVisible = false;
     },
     // 添加 / 修改 / 删除 后 从新加载数据 返回到当前页面 todo
     reloadTableDataAfterOperate(){
@@ -525,35 +463,8 @@ export default {
       })
 
     },
-    editInfo(){
-      let _this = this
-      // let id = _this.editform._id
-      this.$db.project.update({ _id: _this.editform._id }, { $set: { 
-        name: _this.editform.name,
-        info: _this.editform.info,
-        url: _this.editform.url,
-         } }, {}, function (err) {
-           if(err){
-                _this.$message.error("修改失败");
-              }else{
-                _this.$message({
-                  type: 'success',
-                  message: '修改成功!'
-                });
-
-           }
-      });
-      // 通知
-      // const h = this.$createElement;
-      // this.$notify({
-      //     title: '提示',
-      //     message: h('i', { style: 'color: green'}, '修改成功')
-      // });
-      this.editDialogFormVisible = false;
-
-    },
     handleEdit(index, row){
-      console.log(index,row);
+      // console.log(index,row);
       this.editDialogFormVisible = true;
       this.editform = row
       console.log(this.editform)
@@ -639,6 +550,10 @@ export default {
     },
     showSearch(){
       alert(this.search)
+    },
+    ShowEditInfo(data){
+      this.editDialogFormVisible = data
+
     }
   }
 };
