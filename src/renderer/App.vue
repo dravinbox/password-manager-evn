@@ -1,6 +1,6 @@
 <template>
 <el-container style=" border: 1px solid #eee">
-  <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
+  <!-- <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
     <el-menu :default-openeds="['1']">
       <el-submenu v-for="menu in menus" :key="menu.mid" :index="menu.mid+''">
         <template slot="title"><i :class="menu.classObj"></i>{{menu.menusName}}</template>
@@ -9,7 +9,7 @@
         </el-menu-item-group>
       </el-submenu>
     </el-menu>
-  </el-aside>
+  </el-aside> -->
   
   <el-container>
     <el-header style="text-align: right; font-size: 12px">
